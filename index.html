@@ -149,21 +149,10 @@
       flex-shrink: 0;
     }
 
-    li button.delete {
-      color: #ccc;
-    }
-
-    li button.delete:hover {
-      color: #ef4444;
-    }
-
-    li button.edit {
-      color: #ccc;
-    }
-
-    li button.edit:hover {
-      color: #4f46e5;
-    }
+    li button.delete { color: #ccc; }
+    li button.delete:hover { color: #ef4444; }
+    li button.edit { color: #ccc; }
+    li button.edit:hover { color: #4f46e5; }
 
     li .edit-input {
       flex: 1;
@@ -185,9 +174,7 @@
       flex-shrink: 0;
     }
 
-    li button.save:hover {
-      background: #4338ca;
-    }
+    li button.save:hover { background: #4338ca; }
 
     li button.cancel {
       background: none;
@@ -200,10 +187,7 @@
       flex-shrink: 0;
     }
 
-    li button.cancel:hover {
-      border-color: #aaa;
-      color: #555;
-    }
+    li button.cancel:hover { border-color: #aaa; color: #555; }
 
     .footer {
       margin-top: 20px;
@@ -222,9 +206,7 @@
       font-size: 13px;
     }
 
-    .footer button:hover {
-      text-decoration: underline;
-    }
+    .footer button:hover { text-decoration: underline; }
 
     .empty {
       text-align: center;
@@ -232,21 +214,39 @@
       padding: 24px 0;
       font-size: 14px;
     }
+
+    .loading {
+      text-align: center;
+      color: #aaa;
+      padding: 24px 0;
+      font-size: 14px;
+    }
+
+    .error-msg {
+      background: #fef2f2;
+      color: #dc2626;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      margin-bottom: 12px;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Yapilacaklar</h1>
+    <div class="error-msg" id="errorMsg"></div>
     <div class="input-row">
       <input type="text" id="todoInput" placeholder="Yeni gorev ekle..." />
       <button onclick="addTodo()">Ekle</button>
     </div>
     <div class="filters">
-      <button class="active" onclick="setFilter('all', this)">Tumü</button>
+      <button class="active" onclick="setFilter('all', this)">Tumu</button>
       <button onclick="setFilter('active', this)">Aktif</button>
       <button onclick="setFilter('done', this)">Tamamlandi</button>
     </div>
-    <ul id="todoList"></ul>
+    <ul id="todoList"><li class="loading">Yukleniyor...</li></ul>
     <div class="footer">
       <span id="countLabel"></span>
       <button onclick="clearDone()">Tamamlananları temizle</button>
@@ -254,11 +254,138 @@
   </div>
 
   <script>
-    let todos = JSON.parse(localStorage.getItem('todos') || '[]');
-    let filter = 'all';
+    const SUPABASE_URL = 'https://txdvoaqojhfycpylsihg.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4ZHZvYXFvamhmeWNweWxzaWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDkxMTQsImV4cCI6MjA5MjI4NTExNH0.OekCTIgoxbqYGSSKfbC49tKcqr0W0GuA8fvgaAre36Y';
+    const API = `${SUPABASE_URL}/rest/v1/todos`;
+    const HEADERS = {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Prefer': 'return=representation'
+    };
 
-    function save() {
-      localStorage.setItem('todos', JSON.stringify(todos));
+    let todos = [];
+    let filter = 'all';
+    let editingId = null;
+
+    async function apiFetch(url, options = {}) {
+      const res = await fetch(url, { ...options, headers: { ...HEADERS, ...options.headers } });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+      }
+      const text = await res.text();
+      return text ? JSON.parse(text) : [];
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 4000);
+    }
+
+    async function loadTodos() {
+      try {
+        todos = await apiFetch(`${API}?order=created_at.asc`);
+        render();
+      } catch (e) {
+        showError('Gorevler yuklenemedi: ' + e.message);
+      }
+    }
+
+    async function addTodo() {
+      const input = document.getElementById('todoInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      try {
+        const [created] = await apiFetch(API, {
+          method: 'POST',
+          body: JSON.stringify({ text, done: false })
+        });
+        todos.push(created);
+        render();
+      } catch (e) {
+        showError('Gorev eklenemedi: ' + e.message);
+      }
+    }
+
+    async function toggle(id) {
+      const todo = todos.find(t => t.id === id);
+      if (!todo) return;
+      const newDone = !todo.done;
+      try {
+        const [updated] = await apiFetch(`${API}?id=eq.${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ done: newDone })
+        });
+        todo.done = updated.done;
+        render();
+      } catch (e) {
+        showError('Guncellenemedi: ' + e.message);
+      }
+    }
+
+    async function remove(id) {
+      try {
+        await apiFetch(`${API}?id=eq.${id}`, { method: 'DELETE', headers: { 'Prefer': '' } });
+        todos = todos.filter(t => t.id !== id);
+        render();
+      } catch (e) {
+        showError('Silinemedi: ' + e.message);
+      }
+    }
+
+    async function clearDone() {
+      const doneIds = todos.filter(t => t.done).map(t => t.id);
+      if (!doneIds.length) return;
+      try {
+        await apiFetch(`${API}?done=eq.true`, { method: 'DELETE', headers: { 'Prefer': '' } });
+        todos = todos.filter(t => !t.done);
+        render();
+      } catch (e) {
+        showError('Temizlenemedi: ' + e.message);
+      }
+    }
+
+    function startEdit(id) {
+      const todo = todos.find(t => t.id === id);
+      if (!todo || todo.done) return;
+      editingId = id;
+      render();
+    }
+
+    async function saveEdit(id) {
+      const inp = document.getElementById(`edit-${id}`);
+      const text = inp ? inp.value.trim() : '';
+      if (!text) return;
+      try {
+        const [updated] = await apiFetch(`${API}?id=eq.${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ text })
+        });
+        const todo = todos.find(t => t.id === id);
+        if (todo) todo.text = updated.text;
+        editingId = null;
+        render();
+      } catch (e) {
+        showError('Duzenlenemedi: ' + e.message);
+      }
+    }
+
+    function cancelEdit() {
+      editingId = null;
+      render();
+    }
+
+    function handleEditKey(e, id) {
+      if (e.key === 'Enter') saveEdit(id);
+      if (e.key === 'Escape') cancelEdit();
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
     function render() {
@@ -272,12 +399,12 @@
       if (filtered.length === 0) {
         list.innerHTML = '<li class="empty">Gorev yok</li>';
       } else {
-        list.innerHTML = filtered.map(t => t.editing ? `
+        list.innerHTML = filtered.map(t => t.id === editingId ? `
           <li data-id="${t.id}">
             <input class="edit-input" id="edit-${t.id}" value="${escapeHtml(t.text)}"
               onkeydown="handleEditKey(event, ${t.id})" />
             <button class="save" onclick="saveEdit(${t.id})">Kaydet</button>
-            <button class="cancel" onclick="cancelEdit(${t.id})">Iptal</button>
+            <button class="cancel" onclick="cancelEdit()">Iptal</button>
           </li>
         ` : `
           <li class="${t.done ? 'done' : ''}" data-id="${t.id}">
@@ -288,78 +415,14 @@
           </li>
         `).join('');
 
-        // Düzenleme modundaysa inputa odaklan
-        const editing = filtered.find(t => t.editing);
-        if (editing) {
-          const inp = document.getElementById(`edit-${editing.id}`);
+        if (editingId) {
+          const inp = document.getElementById(`edit-${editingId}`);
           if (inp) { inp.focus(); inp.select(); }
         }
       }
 
       const active = todos.filter(t => !t.done).length;
-      document.getElementById('countLabel').textContent =
-        `${active} gorev kaldi`;
-    }
-
-    function escapeHtml(str) {
-      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-    function addTodo() {
-      const input = document.getElementById('todoInput');
-      const text = input.value.trim();
-      if (!text) return;
-      todos.push({ id: Date.now(), text, done: false });
-      input.value = '';
-      save();
-      render();
-    }
-
-    function startEdit(id) {
-      todos.forEach(t => t.editing = false);
-      const todo = todos.find(t => t.id === id);
-      if (todo && !todo.done) todo.editing = true;
-      render();
-    }
-
-    function saveEdit(id) {
-      const inp = document.getElementById(`edit-${id}`);
-      const text = inp ? inp.value.trim() : '';
-      if (!text) return;
-      const todo = todos.find(t => t.id === id);
-      if (todo) { todo.text = text; todo.editing = false; }
-      save();
-      render();
-    }
-
-    function cancelEdit(id) {
-      const todo = todos.find(t => t.id === id);
-      if (todo) todo.editing = false;
-      render();
-    }
-
-    function handleEditKey(e, id) {
-      if (e.key === 'Enter') saveEdit(id);
-      if (e.key === 'Escape') cancelEdit(id);
-    }
-
-    function toggle(id) {
-      const todo = todos.find(t => t.id === id);
-      if (todo) todo.done = !todo.done;
-      save();
-      render();
-    }
-
-    function remove(id) {
-      todos = todos.filter(t => t.id !== id);
-      save();
-      render();
-    }
-
-    function clearDone() {
-      todos = todos.filter(t => !t.done);
-      save();
-      render();
+      document.getElementById('countLabel').textContent = `${active} gorev kaldi`;
     }
 
     function setFilter(f, btn) {
@@ -373,7 +436,7 @@
       if (e.key === 'Enter') addTodo();
     });
 
-    render();
+    loadTodos();
   </script>
 </body>
 </html>
