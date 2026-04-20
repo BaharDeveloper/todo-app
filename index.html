@@ -5,19 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Todo Uygulamasi</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Segoe UI', sans-serif;
       background: #f0f2f5;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
+      align-items: flex-start;
       padding: 40px 16px;
-      min-height: 100vh;
     }
 
     .container {
@@ -26,21 +23,148 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
       padding: 32px;
       width: 100%;
-      max-width: 480px;
-      height: fit-content;
+      max-width: 460px;
     }
 
-    h1 {
-      font-size: 24px;
+    /* ---------- AUTH ---------- */
+    #authBox h1 {
+      font-size: 22px;
       color: #1a1a2e;
-      margin-bottom: 24px;
       text-align: center;
+      margin-bottom: 8px;
     }
+
+    #authBox p.sub {
+      text-align: center;
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 24px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .field label { font-size: 13px; color: #555; font-weight: 500; }
+
+    .field input {
+      padding: 10px 14px;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus { border-color: #4f46e5; }
+
+    .btn-primary {
+      width: 100%;
+      padding: 11px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 4px;
+    }
+
+    .btn-primary:hover { background: #4338ca; }
+    .btn-primary:disabled { background: #a5b4fc; cursor: not-allowed; }
+
+    .toggle-link {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 13px;
+      color: #777;
+    }
+
+    .toggle-link a {
+      color: #4f46e5;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .toggle-link a:hover { text-decoration: underline; }
+
+    /* ---------- SUCCESS BANNER ---------- */
+    #successBanner {
+      display: none;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      color: #166534;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    #successBanner strong { display: block; font-size: 16px; margin-bottom: 4px; }
+
+    /* ---------- ALERT ---------- */
+    .alert {
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 13px;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    .alert.error { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+    .alert.info  { background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
+
+    /* ---------- APP ---------- */
+    #appBox { display: none; }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .app-header h1 { font-size: 22px; color: #1a1a2e; }
+
+    .app-header .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .app-header .user-email {
+      font-size: 12px;
+      color: #999;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .btn-logout {
+      background: none;
+      border: 1.5px solid #ddd;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 12px;
+      color: #888;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-logout:hover { border-color: #ef4444; color: #ef4444; }
 
     .input-row {
       display: flex;
       gap: 8px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .input-row input {
@@ -53,9 +177,7 @@
       transition: border-color 0.2s;
     }
 
-    .input-row input:focus {
-      border-color: #4f46e5;
-    }
+    .input-row input:focus { border-color: #4f46e5; }
 
     .input-row button {
       padding: 10px 18px;
@@ -68,9 +190,7 @@
       transition: background 0.2s;
     }
 
-    .input-row button:hover {
-      background: #4338ca;
-    }
+    .input-row button:hover { background: #4338ca; }
 
     .filters {
       display: flex;
@@ -96,9 +216,7 @@
       color: #fff;
     }
 
-    ul {
-      list-style: none;
-    }
+    ul { list-style: none; }
 
     li {
       display: flex;
@@ -109,14 +227,8 @@
       transition: background 0.15s;
     }
 
-    li:last-child {
-      border-bottom: none;
-    }
-
-    li:hover {
-      background: #f9f9fb;
-      border-radius: 8px;
-    }
+    li:last-child { border-bottom: none; }
+    li:hover { background: #f9f9fb; border-radius: 8px; }
 
     li input[type="checkbox"] {
       width: 18px;
@@ -133,10 +245,7 @@
       word-break: break-word;
     }
 
-    li.done span {
-      text-decoration: line-through;
-      color: #aaa;
-    }
+    li.done span { text-decoration: line-through; color: #aaa; }
 
     li button.delete,
     li button.edit {
@@ -208,35 +317,56 @@
 
     .footer button:hover { text-decoration: underline; }
 
-    .empty {
-      text-align: center;
-      color: #bbb;
-      padding: 24px 0;
-      font-size: 14px;
-    }
-
-    .loading {
-      text-align: center;
-      color: #aaa;
-      padding: 24px 0;
-      font-size: 14px;
-    }
-
-    .error-msg {
-      background: #fef2f2;
-      color: #dc2626;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 13px;
-      margin-bottom: 12px;
-      display: none;
-    }
+    .empty { text-align: center; color: #bbb; padding: 24px 0; font-size: 14px; }
+    .loading { text-align: center; color: #aaa; padding: 24px 0; font-size: 14px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Yapilacaklar</h1>
-    <div class="error-msg" id="errorMsg"></div>
+<div class="container">
+
+  <!-- AUTH BOX -->
+  <div id="authBox">
+    <h1 id="authTitle">Giris Yap</h1>
+    <p class="sub" id="authSub">Hesabiniza giris yapin</p>
+
+    <div class="alert error" id="authError"></div>
+    <div class="alert info"  id="authInfo"></div>
+
+    <div id="successBanner">
+      <strong>Kayit basarili!</strong>
+      E-posta adresinize bir onay linki gonderildi.<br>
+      Linke tiklayarak hesabinizi aktif edin, sonra giris yapabilirsiniz.
+    </div>
+
+    <div id="authForm">
+      <div class="field">
+        <label for="emailInput">E-posta</label>
+        <input type="email" id="emailInput" placeholder="ornek@mail.com" />
+      </div>
+      <div class="field">
+        <label for="passInput">Sifre</label>
+        <input type="password" id="passInput" placeholder="En az 6 karakter" />
+      </div>
+      <button class="btn-primary" id="authBtn" onclick="handleAuth()">Giris Yap</button>
+      <div class="toggle-link">
+        <span id="toggleText">Hesabiniz yok mu?</span>
+        <a onclick="toggleMode()">Kayit Ol</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP BOX -->
+  <div id="appBox">
+    <div class="app-header">
+      <h1>Yapilacaklar</h1>
+      <div class="user-info">
+        <span class="user-email" id="userEmail"></span>
+        <button class="btn-logout" onclick="logout()">Cikis</button>
+      </div>
+    </div>
+
+    <div class="alert error" id="appError"></div>
+
     <div class="input-row">
       <input type="text" id="todoInput" placeholder="Yeni gorev ekle..." />
       <button onclick="addTodo()">Ekle</button>
@@ -253,190 +383,350 @@
     </div>
   </div>
 
-  <script>
-    const SUPABASE_URL = 'https://txdvoaqojhfycpylsihg.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4ZHZvYXFvamhmeWNweWxzaWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDkxMTQsImV4cCI6MjA5MjI4NTExNH0.OekCTIgoxbqYGSSKfbC49tKcqr0W0GuA8fvgaAre36Y';
-    const API = `${SUPABASE_URL}/rest/v1/todos`;
-    const HEADERS = {
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://txdvoaqojhfycpylsihg.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4ZHZvYXFvamhmeWNweWxzaWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDkxMTQsImV4cCI6MjA5MjI4NTExNH0.OekCTIgoxbqYGSSKfbC49tKcqr0W0GuA8fvgaAre36Y';
+  const AUTH_URL  = `${SUPABASE_URL}/auth/v1`;
+  const REST_URL  = `${SUPABASE_URL}/rest/v1/todos`;
+
+  let session = null;
+  let todos   = [];
+  let filter  = 'all';
+  let editingId = null;
+  let isRegister = false;
+
+  // ===================== INIT =====================
+  async function init() {
+    // URL'de token varsa (email onay linki) - oturumu token'dan kur
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token')) {
+      const params = new URLSearchParams(hash.substring(1));
+      const access_token  = params.get('access_token');
+      const refresh_token = params.get('refresh_token');
+      if (access_token) {
+        session = { access_token, refresh_token };
+        saveSession(session);
+        // URL'i temizle
+        history.replaceState(null, '', window.location.pathname);
+        showApp();
+        loadTodos();
+        return;
+      }
+    }
+
+    // Kayitli oturum varsa yukle
+    const saved = loadSession();
+    if (saved) {
+      session = saved;
+      showApp();
+      loadTodos();
+    } else {
+      showAuth();
+    }
+  }
+
+  function saveSession(s) {
+    localStorage.setItem('sb_session', JSON.stringify(s));
+  }
+
+  function loadSession() {
+    try { return JSON.parse(localStorage.getItem('sb_session')); } catch { return null; }
+  }
+
+  function clearSession() {
+    localStorage.removeItem('sb_session');
+    session = null;
+  }
+
+  // ===================== AUTH =====================
+  function toggleMode() {
+    isRegister = !isRegister;
+    document.getElementById('authTitle').textContent  = isRegister ? 'Kayit Ol' : 'Giris Yap';
+    document.getElementById('authSub').textContent    = isRegister ? 'Yeni hesap olusturun' : 'Hesabiniza giris yapin';
+    document.getElementById('authBtn').textContent    = isRegister ? 'Kayit Ol' : 'Giris Yap';
+    document.getElementById('toggleText').textContent = isRegister ? 'Zaten hesabiniz var mi?' : 'Hesabiniz yok mu?';
+    hideAlert('authError');
+    hideAlert('authInfo');
+    document.getElementById('successBanner').style.display = 'none';
+    document.getElementById('authForm').style.display = 'block';
+  }
+
+  async function handleAuth() {
+    const email = document.getElementById('emailInput').value.trim();
+    const pass  = document.getElementById('passInput').value;
+    if (!email || !pass) { showAlert('authError', 'E-posta ve sifre giriniz.'); return; }
+
+    const btn = document.getElementById('authBtn');
+    btn.disabled = true;
+    hideAlert('authError');
+    hideAlert('authInfo');
+
+    try {
+      if (isRegister) {
+        await signUp(email, pass);
+      } else {
+        await signIn(email, pass);
+      }
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function signUp(email, pass) {
+    const res = await fetch(`${AUTH_URL}/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) { showAlert('authError', data.msg || data.error_description || 'Kayit basarisiz.'); return; }
+
+    // Onay maili gerekiyor
+    document.getElementById('authForm').style.display = 'none';
+    document.getElementById('successBanner').style.display = 'block';
+  }
+
+  async function signIn(email, pass) {
+    const res = await fetch(`${AUTH_URL}/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const msg = data.error_description || data.msg || 'Giris basarisiz.';
+      if (msg.toLowerCase().includes('email') && msg.toLowerCase().includes('confirm')) {
+        showAlert('authError', 'E-posta adresinizi onaylamaniz gerekiyor. Lutfen gelen kutunuzu kontrol edin.');
+      } else {
+        showAlert('authError', msg);
+      }
+      return;
+    }
+    session = { access_token: data.access_token, refresh_token: data.refresh_token };
+    saveSession(session);
+    showApp();
+    loadTodos();
+  }
+
+  async function logout() {
+    if (session) {
+      await fetch(`${AUTH_URL}/logout`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${session.access_token}` }
+      }).catch(() => {});
+    }
+    clearSession();
+    todos = [];
+    editingId = null;
+    filter = 'all';
+    showAuth();
+  }
+
+  // ===================== UI TOGGLE =====================
+  function showAuth() {
+    document.getElementById('authBox').style.display = 'block';
+    document.getElementById('appBox').style.display  = 'none';
+    document.getElementById('emailInput').value = '';
+    document.getElementById('passInput').value  = '';
+    // reset to login mode
+    if (isRegister) toggleMode();
+  }
+
+  function showApp() {
+    document.getElementById('authBox').style.display = 'none';
+    document.getElementById('appBox').style.display  = 'block';
+    // Kullanici emailini goster
+    try {
+      const payload = JSON.parse(atob(session.access_token.split('.')[1]));
+      document.getElementById('userEmail').textContent = payload.email || '';
+    } catch {}
+  }
+
+  // ===================== ALERTS =====================
+  function showAlert(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function hideAlert(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+
+  // ===================== API HELPERS =====================
+  function authHeaders(extra = {}) {
+    return {
       'Content-Type': 'application/json',
       'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Prefer': 'return=representation'
+      'Authorization': `Bearer ${session.access_token}`,
+      'Prefer': 'return=representation',
+      ...extra
     };
+  }
 
-    let todos = [];
-    let filter = 'all';
-    let editingId = null;
+  async function apiFetch(url, options = {}) {
+    const res = await fetch(url, { ...options, headers: authHeaders(options.headers || {}) });
+    if (res.status === 401) { clearSession(); showAuth(); throw new Error('Oturum suresi doldu.'); }
+    if (!res.ok) throw new Error(await res.text());
+    const text = await res.text();
+    return text ? JSON.parse(text) : [];
+  }
 
-    async function apiFetch(url, options = {}) {
-      const res = await fetch(url, { ...options, headers: { ...HEADERS, ...options.headers } });
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err);
-      }
-      const text = await res.text();
-      return text ? JSON.parse(text) : [];
-    }
-
-    function showError(msg) {
-      const el = document.getElementById('errorMsg');
-      el.textContent = msg;
-      el.style.display = 'block';
-      setTimeout(() => el.style.display = 'none', 4000);
-    }
-
-    async function loadTodos() {
-      try {
-        todos = await apiFetch(`${API}?order=created_at.asc`);
-        render();
-      } catch (e) {
-        showError('Gorevler yuklenemedi: ' + e.message);
-      }
-    }
-
-    async function addTodo() {
-      const input = document.getElementById('todoInput');
-      const text = input.value.trim();
-      if (!text) return;
-      input.value = '';
-      try {
-        const [created] = await apiFetch(API, {
-          method: 'POST',
-          body: JSON.stringify({ text, done: false })
-        });
-        todos.push(created);
-        render();
-      } catch (e) {
-        showError('Gorev eklenemedi: ' + e.message);
-      }
-    }
-
-    async function toggle(id) {
-      const todo = todos.find(t => t.id === id);
-      if (!todo) return;
-      const newDone = !todo.done;
-      try {
-        const [updated] = await apiFetch(`${API}?id=eq.${id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ done: newDone })
-        });
-        todo.done = updated.done;
-        render();
-      } catch (e) {
-        showError('Guncellenemedi: ' + e.message);
-      }
-    }
-
-    async function remove(id) {
-      try {
-        await apiFetch(`${API}?id=eq.${id}`, { method: 'DELETE', headers: { 'Prefer': '' } });
-        todos = todos.filter(t => t.id !== id);
-        render();
-      } catch (e) {
-        showError('Silinemedi: ' + e.message);
-      }
-    }
-
-    async function clearDone() {
-      const doneIds = todos.filter(t => t.done).map(t => t.id);
-      if (!doneIds.length) return;
-      try {
-        await apiFetch(`${API}?done=eq.true`, { method: 'DELETE', headers: { 'Prefer': '' } });
-        todos = todos.filter(t => !t.done);
-        render();
-      } catch (e) {
-        showError('Temizlenemedi: ' + e.message);
-      }
-    }
-
-    function startEdit(id) {
-      const todo = todos.find(t => t.id === id);
-      if (!todo || todo.done) return;
-      editingId = id;
+  // ===================== TODOS =====================
+  async function loadTodos() {
+    try {
+      todos = await apiFetch(`${REST_URL}?order=created_at.asc`);
       render();
+    } catch (e) {
+      showAlert('appError', 'Gorevler yuklenemedi: ' + e.message);
     }
+  }
 
-    async function saveEdit(id) {
-      const inp = document.getElementById(`edit-${id}`);
-      const text = inp ? inp.value.trim() : '';
-      if (!text) return;
-      try {
-        const [updated] = await apiFetch(`${API}?id=eq.${id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ text })
-        });
-        const todo = todos.find(t => t.id === id);
-        if (todo) todo.text = updated.text;
-        editingId = null;
-        render();
-      } catch (e) {
-        showError('Duzenlenemedi: ' + e.message);
-      }
+  async function addTodo() {
+    const input = document.getElementById('todoInput');
+    const text  = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    try {
+      const payload = JSON.parse(atob(session.access_token.split('.')[1]));
+      const [created] = await apiFetch(REST_URL, {
+        method: 'POST',
+        body: JSON.stringify({ text, done: false, user_id: payload.sub })
+      });
+      todos.push(created);
+      render();
+    } catch (e) {
+      showAlert('appError', 'Eklenemedi: ' + e.message);
     }
+  }
 
-    function cancelEdit() {
+  async function toggle(id) {
+    const todo = todos.find(t => t.id === id);
+    if (!todo) return;
+    try {
+      const [updated] = await apiFetch(`${REST_URL}?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ done: !todo.done })
+      });
+      todo.done = updated.done;
+      render();
+    } catch (e) {
+      showAlert('appError', 'Guncellenemedi: ' + e.message);
+    }
+  }
+
+  async function remove(id) {
+    try {
+      await apiFetch(`${REST_URL}?id=eq.${id}`, { method: 'DELETE', headers: { 'Prefer': '' } });
+      todos = todos.filter(t => t.id !== id);
+      render();
+    } catch (e) {
+      showAlert('appError', 'Silinemedi: ' + e.message);
+    }
+  }
+
+  async function clearDone() {
+    if (!todos.some(t => t.done)) return;
+    try {
+      await apiFetch(`${REST_URL}?done=eq.true`, { method: 'DELETE', headers: { 'Prefer': '' } });
+      todos = todos.filter(t => !t.done);
+      render();
+    } catch (e) {
+      showAlert('appError', 'Temizlenemedi: ' + e.message);
+    }
+  }
+
+  function startEdit(id) {
+    const todo = todos.find(t => t.id === id);
+    if (!todo || todo.done) return;
+    editingId = id;
+    render();
+  }
+
+  async function saveEdit(id) {
+    const inp  = document.getElementById(`edit-${id}`);
+    const text = inp ? inp.value.trim() : '';
+    if (!text) return;
+    try {
+      const [updated] = await apiFetch(`${REST_URL}?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ text })
+      });
+      const todo = todos.find(t => t.id === id);
+      if (todo) todo.text = updated.text;
       editingId = null;
       render();
+    } catch (e) {
+      showAlert('appError', 'Duzenlenemedi: ' + e.message);
     }
+  }
 
-    function handleEditKey(e, id) {
-      if (e.key === 'Enter') saveEdit(id);
-      if (e.key === 'Escape') cancelEdit();
-    }
+  function cancelEdit() { editingId = null; render(); }
 
-    function escapeHtml(str) {
-      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
+  function handleEditKey(e, id) {
+    if (e.key === 'Enter') saveEdit(id);
+    if (e.key === 'Escape') cancelEdit();
+  }
 
-    function render() {
-      const list = document.getElementById('todoList');
-      const filtered = todos.filter(t => {
-        if (filter === 'active') return !t.done;
-        if (filter === 'done') return t.done;
-        return true;
-      });
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
 
-      if (filtered.length === 0) {
-        list.innerHTML = '<li class="empty">Gorev yok</li>';
-      } else {
-        list.innerHTML = filtered.map(t => t.id === editingId ? `
-          <li data-id="${t.id}">
-            <input class="edit-input" id="edit-${t.id}" value="${escapeHtml(t.text)}"
-              onkeydown="handleEditKey(event, ${t.id})" />
-            <button class="save" onclick="saveEdit(${t.id})">Kaydet</button>
-            <button class="cancel" onclick="cancelEdit()">Iptal</button>
-          </li>
-        ` : `
-          <li class="${t.done ? 'done' : ''}" data-id="${t.id}">
-            <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggle(${t.id})" />
-            <span ondblclick="startEdit(${t.id})">${escapeHtml(t.text)}</span>
-            <button class="edit" onclick="startEdit(${t.id})" title="Duzenle">&#x270E;</button>
-            <button class="delete" onclick="remove(${t.id})" title="Sil">&#x2715;</button>
-          </li>
-        `).join('');
-
-        if (editingId) {
-          const inp = document.getElementById(`edit-${editingId}`);
-          if (inp) { inp.focus(); inp.select(); }
-        }
-      }
-
-      const active = todos.filter(t => !t.done).length;
-      document.getElementById('countLabel').textContent = `${active} gorev kaldi`;
-    }
-
-    function setFilter(f, btn) {
-      filter = f;
-      document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      render();
-    }
-
-    document.getElementById('todoInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter') addTodo();
+  function render() {
+    const list     = document.getElementById('todoList');
+    const filtered = todos.filter(t => {
+      if (filter === 'active') return !t.done;
+      if (filter === 'done')   return t.done;
+      return true;
     });
 
-    loadTodos();
-  </script>
+    if (filtered.length === 0) {
+      list.innerHTML = '<li class="empty">Gorev yok</li>';
+    } else {
+      list.innerHTML = filtered.map(t => t.id === editingId ? `
+        <li data-id="${t.id}">
+          <input class="edit-input" id="edit-${t.id}" value="${escapeHtml(t.text)}"
+            onkeydown="handleEditKey(event, ${t.id})" />
+          <button class="save"   onclick="saveEdit(${t.id})">Kaydet</button>
+          <button class="cancel" onclick="cancelEdit()">Iptal</button>
+        </li>
+      ` : `
+        <li class="${t.done ? 'done' : ''}" data-id="${t.id}">
+          <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggle(${t.id})" />
+          <span ondblclick="startEdit(${t.id})">${escapeHtml(t.text)}</span>
+          <button class="edit"   onclick="startEdit(${t.id})" title="Duzenle">&#x270E;</button>
+          <button class="delete" onclick="remove(${t.id})"   title="Sil">&#x2715;</button>
+        </li>
+      `).join('');
+
+      if (editingId) {
+        const inp = document.getElementById(`edit-${editingId}`);
+        if (inp) { inp.focus(); inp.select(); }
+      }
+    }
+
+    const active = todos.filter(t => !t.done).length;
+    document.getElementById('countLabel').textContent = `${active} gorev kaldi`;
+  }
+
+  function setFilter(f, btn) {
+    filter = f;
+    document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  document.getElementById('todoInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTodo();
+  });
+
+  document.getElementById('passInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleAuth();
+  });
+
+  init();
+</script>
 </body>
 </html>
